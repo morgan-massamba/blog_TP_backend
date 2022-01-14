@@ -3,10 +3,18 @@ const formidable = require('formidable');
 
 exports.getAllItems = async (req, res) => {
     try {
+        //INITIALISATION DE L'OBJECT CONTENANT LES POSSIBLES FILTRES
+        let objectForRequest = {};
+
+        //FILTRE PAR CATEGORIE
+        if (req.query?.categorie) {
+            objectForRequest.categorie = req.query.categorie;
+        }
+
         //PAGINATION
         let currentPage = 1;
         let totalPages = 1;
-        let limitNumber = 10;
+        let limitNumber = 8;
 
         if (req.query?.page) {
             currentPage = parseInt(req.query.page);
@@ -14,17 +22,10 @@ exports.getAllItems = async (req, res) => {
 
         const skipValue = (currentPage - 1) * limitNumber;
 
-        const nbItems = await Item.estimatedDocumentCount();
+        const nbItems = await Item.countDocuments(objectForRequest);
 
         if (nbItems > 0) {
             totalPages = Math.ceil(nbItems / limitNumber);
-        }
-
-        let objectForRequest = {};
-
-        //FILTRE PAR CATEGORIE
-        if (req.query?.categorie) {
-            objectForRequest.categorie = req.query.categorie;
         }
 
         //Recherche des articles
